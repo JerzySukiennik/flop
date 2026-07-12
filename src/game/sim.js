@@ -10,7 +10,7 @@ export const GROUP_WORLD = ((1 << 8) << 16) | 0xffff;
 
 export const DEFAULT_INPUT = () => ({
   moveX: 0, moveZ: 0, yaw: 0, pitch: 0,
-  jump: false, grabL: false, grabR: false,
+  jump: false, grabL: false, grabR: false, grapple: false,
 });
 
 export class Sim {
@@ -115,6 +115,7 @@ export class Sim {
   /** One fixed 60 Hz tick. Call from an accumulator loop, never with raw dt. */
   step() {
     const dt = TUNING.dt;
+    this.levelRuntime?.update(dt);
     for (const p of this.players) {
       if (!p) continue;
       p.arms.update(this.RAPIER, this.world, p.input, dt, this);

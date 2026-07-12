@@ -53,6 +53,7 @@ export class InputManager {
       yaw: this.yaw, pitch: this.pitch,
       jump: this.keys.has('Space'),
       grabL: this.grabL, grabR: this.grabR,
+      grapple: this.keys.has('KeyE'),
     };
   }
 }

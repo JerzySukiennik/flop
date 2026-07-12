@@ -22,7 +22,7 @@ export function encodeInput(seq, input) {
   dv.setInt8(4, Math.round(Math.max(-1, Math.min(1, input.moveZ)) * 127));
   dv.setInt16(5, clamp16(wrapPi(input.yaw) * ANG_SCALE), true);
   dv.setInt16(7, clamp16(input.pitch * ANG_SCALE), true);
-  dv.setUint8(9, (input.jump ? 1 : 0) | (input.grabL ? 2 : 0) | (input.grabR ? 4 : 0));
+  dv.setUint8(9, (input.jump ? 1 : 0) | (input.grabL ? 2 : 0) | (input.grabR ? 4 : 0) | (input.grapple ? 8 : 0));
   dv.setUint16(10, 0, true); // reserved
   return buf;
 }
@@ -38,6 +38,7 @@ export function decodeInput(dv) {
       jump: (dv.getUint8(9) & 1) !== 0,
       grabL: (dv.getUint8(9) & 2) !== 0,
       grabR: (dv.getUint8(9) & 4) !== 0,
+      grapple: (dv.getUint8(9) & 8) !== 0,
     },
   };
 }
@@ -89,7 +90,7 @@ function readBody(dv, off, out) {
  * @param sim Sim (host)
  * @param propEntities array of {index, body} for non-player dynamic entities
  */
-export function encodeState(sim, propEntities) {
+export function encodeState(sim, propEntities, generation = 0) {
   let playerMask = 0;
   const activePlayers = [];
   for (let i = 0; i < 4; i++) {
@@ -101,13 +102,14 @@ export function encodeState(sim, propEntities) {
   for (const e of propEntities) {
     if (!e.body.isSleeping()) awakeProps.push(e);
   }
-  const size = 6 + activePlayers.length * (1 + 13 * BODY_BYTES) + 2 + awakeProps.length * (2 + BODY_BYTES);
+  const size = 7 + activePlayers.length * (1 + 13 * BODY_BYTES) + 2 + awakeProps.length * (2 + BODY_BYTES);
   const buf = new ArrayBuffer(size);
   const dv = new DataView(buf);
   dv.setUint8(0, MSG.STATE);
   dv.setUint32(1, sim.tick, true);
-  dv.setUint8(5, playerMask);
-  let off = 6;
+  dv.setUint8(5, generation & 0xff);
+  dv.setUint8(6, playerMask);
+  let off = 7;
   for (const p of activePlayers) {
     const flags = (p.balance.state === 'ko' ? 1 : 0) | (p.balance.state === 'recover' ? 2 : 0)
       | (p.arms.grabs.L ? 4 : 0) | (p.arms.grabs.R ? 8 : 0);
@@ -124,8 +126,9 @@ export function encodeState(sim, propEntities) {
 
 export function decodeState(dv) {
   const tick = dv.getUint32(1, true);
-  const playerMask = dv.getUint8(5);
-  let off = 6;
+  const generation = dv.getUint8(5);
+  const playerMask = dv.getUint8(6);
+  let off = 7;
   const players = {};
   for (let slot = 0; slot < 4; slot++) {
     if (!(playerMask & (1 << slot))) continue;
@@ -143,7 +146,7 @@ export function decodeState(dv) {
     const t = {}; off = readBody(dv, off, t);
     props.push({ index, ...t });
   }
-  return { tick, players, props };
+  return { tick, generation, players, props };
 }
 
 // ---------- reliable channel framing ----------

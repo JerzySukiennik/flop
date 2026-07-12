@@ -29,7 +29,11 @@ export function createScene(container) {
   sun.shadow.camera.far = 80;
   sun.shadow.bias = -0.002;
   scene.add(sun);
-  scene.add(new THREE.HemisphereLight(0xbdd4ee, 0x8a7a5a, 0.9));
+  scene.add(new THREE.HemisphereLight(0xbdd4ee, 0x8a7a5a, 1.25));
+  // South-facing fill so walls opposite the sun don't render near-black.
+  const fill = new THREE.DirectionalLight(0xdde8ff, 0.7);
+  fill.position.set(-12, 18, -20);
+  scene.add(fill);
 
   window.addEventListener('resize', () => {
     camera.aspect = window.innerWidth / window.innerHeight;

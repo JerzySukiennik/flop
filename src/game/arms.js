@@ -16,6 +16,62 @@ export class ArmsController {
     this.balance = balance;
     this.grabs = { L: null, R: null }; // {joint, otherBody, ownAnchorLocal, otherAnchorLocal}
     this.restOffsets = PARTS.map((p) => ({ ...p.pos }));
+    // Grappling hook (hub toy, add-on #3): spring joint hand → hit point.
+    this.grapple = { has: false, joint: null, anchorBody: null, prevBtn: false, target: null };
+  }
+
+  /** Hub-only grappling hook. Runs inside the fixed step (host authority). */
+  updateGrapple(RAPIER, world, input, sim) {
+    const level = sim.levelRuntime?.level;
+    const g = this.grapple;
+    if (!level?.grappleAllowed) {
+      if (g.joint) { world.removeImpulseJoint(g.joint, true); g.joint = null; }
+      g.has = false;
+      return;
+    }
+    const pelvis = this.ragdoll.bodies.pelvis.translation();
+    const zone = level.grappleZone;
+    if (!g.has && zone
+      && Math.abs(pelvis.x - zone.pos[0]) <= zone.size[0]
+      && Math.abs(pelvis.y - zone.pos[1]) <= zone.size[1] + 1
+      && Math.abs(pelvis.z - zone.pos[2]) <= zone.size[2]) {
+      g.has = true;
+      sim.levelRuntime.onEvent?.({ t: 'grapplePickup', slot: this.playerIndex });
+    }
+    const pressed = input.grapple && !g.prevBtn;
+    g.prevBtn = input.grapple;
+    if (!g.has || !pressed) return;
+    if (g.joint) {
+      world.removeImpulseJoint(g.joint, true);
+      g.joint = null;
+      g.target = null;
+      return;
+    }
+    const head = this.ragdoll.bodies.head;
+    const origin = head.translation();
+    const dir = qRotate(
+      qMul(yawQuat(input.yaw), qFromAxisAngle(v3(1, 0, 0), -input.pitch)),
+      v3(0, 0, 1),
+    );
+    const groups = ((1 << this.playerIndex) << 16) | (0xffff & ~(1 << this.playerIndex));
+    const ray = new RAPIER.Ray(
+      { x: origin.x + dir.x * 0.4, y: origin.y + dir.y * 0.4, z: origin.z + dir.z * 0.4 }, dir,
+    );
+    const hit = world.castRay(ray, 20, true, undefined, groups);
+    if (!hit) return;
+    const other = hit.collider.parent();
+    if (!other) return;
+    const hitPoint = {
+      x: ray.origin.x + ray.dir.x * hit.timeOfImpact,
+      y: ray.origin.y + ray.dir.y * hit.timeOfImpact,
+      z: ray.origin.z + ray.dir.z * hit.timeOfImpact,
+    };
+    const dist = hit.timeOfImpact + 0.4;
+    const otherLocal = qRotate(qConj(other.rotation()), vSub(hitPoint, other.translation()));
+    const jd = RAPIER.JointData.spring(dist * 0.35, 220, 18, HAND_LOCAL.R, otherLocal);
+    g.joint = world.createImpulseJoint(jd, this.ragdoll.bodies.forearmR, other, true);
+    g.target = hitPoint;
+    sim.levelRuntime.onEvent?.({ t: 'grappleFire', slot: this.playerIndex, point: [hitPoint.x, hitPoint.y, hitPoint.z] });
   }
 
   releaseArm(world, side) {
@@ -29,10 +85,16 @@ export class ArmsController {
   releaseAll(world) {
     this.releaseArm(world, 'L');
     this.releaseArm(world, 'R');
+    if (this.grapple.joint) {
+      world.removeImpulseJoint(this.grapple.joint, true);
+      this.grapple.joint = null;
+      this.grapple.target = null;
+    }
   }
 
   update(RAPIER, world, input, dt, sim) {
     const A = TUNING.arms;
+    this.updateGrapple(RAPIER, world, input, sim);
     const chest = this.ragdoll.bodies.chest;
     const chestRot = chest.rotation();
     const aimDir = qRotate(

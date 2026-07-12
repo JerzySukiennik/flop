@@ -1,4 +1,5 @@
-{
+// Level data — deterministic build recipe input (§5.3). Edit as data only.
+export default {
   "name": "The Yard",
   "sky": "day",
   "killY": -8,
@@ -48,3 +49,4 @@
   ],
   "grappleZone": { "pos": [-14, 1.0, -14], "size": [1.2, 1.5, 1.2] }
 }
+;

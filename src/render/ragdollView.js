@@ -38,8 +38,65 @@ export class RagdollView {
       eye.position.set(dx, 0.02, 0.095);
       this.meshes[headIdx].add(eye);
     }
+    this.headMesh = this.meshes[headIdx];
+    this.skinMat = skin;
+    this.darkMat = dark;
+    this._hat = null;
+    this.setHat(customization.hat ?? 'none');
+
+    // Emote bubble (hidden until an emote fires).
+    this.emoteSprite = makeEmoteSprite();
+    this.emoteSprite.visible = false;
+    this.headMesh.add(this.emoteSprite);
+    this._emoteTimer = 0;
 
     scene.add(this.group);
+  }
+
+  setColor(color) {
+    this.skinMat.color = new THREE.Color(color);
+    this.darkMat.color = new THREE.Color(color).multiplyScalar(0.55);
+  }
+
+  setHat(hat) {
+    if (this._hat) { this.headMesh.remove(this._hat); }
+    this._hat = null;
+    let mesh = null;
+    if (hat === 'cone') {
+      mesh = new THREE.Mesh(
+        new THREE.ConeGeometry(0.09, 0.22, 12),
+        new THREE.MeshStandardMaterial({ color: 0xff8a3a }),
+      );
+      mesh.position.y = 0.16;
+    } else if (hat === 'tophat') {
+      mesh = new THREE.Group();
+      const mat = new THREE.MeshStandardMaterial({ color: 0x232326, roughness: 0.5 });
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.02, 16), mat);
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.18, 16), mat);
+      top.position.y = 0.1;
+      mesh.add(brim, top);
+      mesh.position.y = 0.09;
+    } else if (hat === 'crown') {
+      mesh = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.1, 0.085, 0.1, 8, 1, true),
+        new THREE.MeshStandardMaterial({ color: 0xf0c040, metalness: 0.7, roughness: 0.3, side: THREE.DoubleSide }),
+      );
+      mesh.position.y = 0.12;
+    }
+    if (mesh) { this._hat = mesh; this.headMesh.add(mesh); }
+  }
+
+  showEmote(emoji, seconds = 2.5) {
+    drawEmote(this.emoteSprite, emoji);
+    this.emoteSprite.visible = true;
+    this._emoteTimer = seconds;
+  }
+
+  tickEmote(dt) {
+    if (this._emoteTimer > 0) {
+      this._emoteTimer -= dt;
+      if (this._emoteTimer <= 0) this.emoteSprite.visible = false;
+    }
   }
 
   /** Update from live rigid bodies (host) . */
@@ -61,8 +118,36 @@ export class RagdollView {
     }
   }
 
+  setVisible(v) { this.group.visible = v; }
+
   dispose(scene) {
     scene.remove(this.group);
     for (const m of this.meshes) m.geometry.dispose();
   }
+}
+
+function makeEmoteSprite() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128; canvas.height = 128;
+  const tex = new THREE.CanvasTexture(canvas);
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+  sprite.scale.set(0.5, 0.5, 1);
+  sprite.position.y = 0.42;
+  sprite.userData.canvas = canvas;
+  sprite.userData.tex = tex;
+  return sprite;
+}
+
+function drawEmote(sprite, emoji) {
+  const ctx = sprite.userData.canvas.getContext('2d');
+  ctx.clearRect(0, 0, 128, 128);
+  ctx.beginPath();
+  ctx.arc(64, 64, 56, 0, Math.PI * 2);
+  ctx.fillStyle = 'rgba(255,255,255,0.92)';
+  ctx.fill();
+  ctx.font = '64px system-ui';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji, 64, 70);
+  sprite.userData.tex.needsUpdate = true;
 }

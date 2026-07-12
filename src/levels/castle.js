@@ -1,4 +1,5 @@
-{
+// Level data — deterministic build recipe input (§5.3). Edit as data only.
+export default {
   "name": "Flopstone Keep",
   "sky": "dusk",
   "killY": -8,
@@ -7,10 +8,10 @@
     { "id": "field", "shape": "box", "pos": [0, -0.5, 4], "size": [16, 0.5, 12], "tex": "grass" },
 
     { "id": "outerWall", "shape": "box", "pos": [0, 1.9, 12], "size": [7, 1.9, 0.6], "tex": "stone" },
-    { "id": "holdA", "shape": "box", "pos": [-1.2, 0.9, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
-    { "id": "holdB", "shape": "box", "pos": [-0.4, 1.7, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
-    { "id": "holdC", "shape": "box", "pos": [-1.4, 2.5, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
-    { "id": "holdD", "shape": "box", "pos": [-0.6, 3.3, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
+    { "id": "holdA", "shape": "box", "pos": [-1.2, 0.9, 11.15], "size": [0.22, 0.12, 0.38], "tex": "stone" },
+    { "id": "holdB", "shape": "box", "pos": [-0.4, 1.7, 11.15], "size": [0.22, 0.12, 0.38], "tex": "stone" },
+    { "id": "holdC", "shape": "box", "pos": [-1.4, 2.5, 11.15], "size": [0.22, 0.12, 0.38], "tex": "stone" },
+    { "id": "holdD", "shape": "box", "pos": [-0.6, 3.3, 11.15], "size": [0.22, 0.12, 0.38], "tex": "stone" },
     { "id": "wallWalk", "shape": "box", "pos": [0, 3.55, 12.9], "size": [7, 0.25, 1.5], "tex": "stone" },
     { "id": "wallStairs", "shape": "box", "pos": [4.5, 1.7, 14.9], "size": [1.2, 1.9, 0.9], "rot": [38, 0, 0], "tex": "stone" },
 
@@ -72,3 +73,4 @@
     { "pos": [-6, 8.3, 43.5], "size": [1.4, 1.0, 1.4], "target": "hub", "label": "Back to the Yard" }
   ]
 }
+;

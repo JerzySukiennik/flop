@@ -1,34 +1,20 @@
 // Level sanity: every level instantiates deterministically (hash ×2 match),
 // steps 10 s with 4 players parked+active without NaN, and contraptions hold.
 import RAPIER from '@dimforge/rapier3d-compat';
-import { readFileSync } from 'node:fs';
-import { Sim } from '../src/game/sim.js';
-import { instantiateLevel } from '../src/game/levels.js';
+import { buildGameSim, LEVELS } from '../src/game/recipe.js';
 
 await RAPIER.init();
 
-const levelNames = ['hub', 'construction', 'docks', 'castle'];
 let failures = 0;
 const check = (cond, msg) => {
   if (!cond) { console.error(`  ✗ ${msg}`); failures++; }
   else console.log(`  ✓ ${msg}`);
 };
 
-export function buildGameSim(levelJson) {
-  const sim = new Sim(RAPIER);
-  const runtime = instantiateLevel(RAPIER, sim, levelJson);
-  for (let slot = 0; slot < 4; slot++) {
-    sim.addPlayer(slot, { x: slot * 4 - 6, y: 0.3, z: -120 }); // parked
-  }
-  sim.levelRuntime = runtime;
-  return { sim, runtime };
-}
-
-for (const name of levelNames) {
+for (const name of Object.keys(LEVELS)) {
   console.log(`— ${name} —`);
-  const json = JSON.parse(readFileSync(new URL(`../src/levels/${name}.json`, import.meta.url)));
-  const a = buildGameSim(json);
-  const b = buildGameSim(json);
+  const a = buildGameSim(RAPIER, name);
+  const b = buildGameSim(RAPIER, name);
   check(a.sim.manifestHash() === b.sim.manifestHash(), `deterministic build (${a.sim.manifestHash()})`);
 
   const { sim, runtime } = a;
@@ -39,10 +25,8 @@ for (const name of levelNames) {
   sim.activatePlayer(1, runtime.spawnPoint(1));
 
   let nan = false;
-  const origStep = sim.step.bind(sim);
   for (let i = 0; i < 600; i++) {
-    runtime.update(1 / 60);
-    origStep();
+    sim.step(); // levelRuntime.update runs inside the fixed step
     if (i % 120 === 0) {
       sim.world.forEachRigidBody((body) => {
         const p = body.translation();

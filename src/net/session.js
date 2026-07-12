@@ -27,6 +27,7 @@ export class HostSession {
     this.lastStateSent = 0;
     this.lastFullSnap = 0;
     this.snapId = 0;
+    this.generation = 0;
     this.onEvent = null;       // game-level events surface here
     this.joinOrder = [];       // peerIds in join order (host first) for election
   }
@@ -84,13 +85,23 @@ export class HostSession {
     }
   }
 
+  /** Swap in a new sim after a level change; peers survive. */
+  rebindSim(sim, generation) {
+    this.sim = sim;
+    this.generation = generation & 0xff;
+    this.propEntities = sim.entities
+      .map((e, index) => ({ index, body: e.body, type: e.type }))
+      .filter((e) => e.type === 'prop');
+    this.lastFullSnap = 0;
+  }
+
   /** Call every render frame; steps sim + broadcasts on schedule. */
   update(elapsed) {
     this.sim.advance(elapsed);
     const t = this.now();
     if (t - this.lastStateSent >= 1000 / TUNING.net.snapshotHz) {
       this.lastStateSent = t;
-      const buf = encodeState(this.sim, this.propEntities);
+      const buf = encodeState(this.sim, this.propEntities, this.generation);
       for (const p of this.peers.values()) p.transport.send('state', buf);
     }
     if (t - this.lastFullSnap >= TUNING.net.fullSnapshotEveryMs && this.peers.size > 0) {
@@ -131,7 +142,18 @@ export class ClientSession {
     this.onEvent = null;
     this.onDesync = null;
     this.roster = [];
+    this.generation = opts.generation ?? 0;
     opts.transport.onMessage((channel, data) => this._onMessage(channel, data));
+  }
+
+  /** After a level change: drop old-level state, expect the new recipe. */
+  resetForLevel(generation, expectedManifestHash) {
+    this.generation = generation & 0xff;
+    this.expectedManifestHash = expectedManifestHash;
+    this.buffer = [];
+    this.lastFull = null;
+    this.pendingSnapMeta = null;
+    this.assembler = new SnapshotAssembler();
   }
 
   _onMessage(channel, data) {
@@ -140,6 +162,7 @@ export class ClientSession {
     this.lastHostHeard = this.now();
     if (type === MSG.STATE) {
       const snap = decodeState(dv);
+      if (snap.generation !== this.generation) return; // stale level packets
       snap.recvTime = this.now();
       // Keep buffer sorted & bounded.
       this.buffer.push(snap);

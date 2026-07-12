@@ -1,4 +1,5 @@
-{
+// Level data — deterministic build recipe input (§5.3). Edit as data only.
+export default {
   "name": "Pier 4",
   "sky": "sunset",
   "killY": -14,
@@ -58,3 +59,4 @@
     { "pos": [0, 2.3, 52.5], "size": [1.6, 1.1, 1.6], "target": "hub", "label": "Back to the Yard" }
   ]
 }
+;
