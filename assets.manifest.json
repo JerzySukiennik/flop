@@ -1,0 +1,4 @@
+{
+  "comment": "Every third-party asset. fetch-assets.mjs downloads, sha256-verifies, unpacks into public/assets/<id>/. License policy: CC0 or CC-BY only.",
+  "assets": []
+}

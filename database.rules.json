@@ -1,0 +1,24 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "lobbies": {
+      ".read": true,
+      "$room": {
+        ".write": "auth != null && ((newData.exists() && newData.child('hostUid').val() === auth.uid && (!data.exists() || data.child('hostUid').val() === auth.uid)) || (data.exists() && !newData.exists() && (data.child('hostUid').val() === auth.uid || data.child('heartbeat').val() < now - 60000)))",
+        ".validate": "!newData.exists() || newData.hasChildren(['name','hostPeerId','hostUid','playerCount','maxPlayers','level','createdAt','heartbeat'])"
+      }
+    },
+    "signals": {
+      "$room": {
+        "$peerId": {
+          ".read": "auth != null && auth.uid === $peerId",
+          ".write": "auth != null && auth.uid === $peerId",
+          "inbox": {
+            ".write": "auth != null"
+          }
+        }
+      }
+    }
+  }
+}
