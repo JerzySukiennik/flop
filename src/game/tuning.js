@@ -38,8 +38,8 @@ export const TUNING = {
     yawKd: 12,
     yawMaxTorque: 110,
     tiltLimit: 1.15,       // rad (~66°) beyond which we're "falling"
-    fightTilt: 0.72,       // rad — leaning harder than this counts as losing
-    fightTime: 0.42,       // s of sustained heavy lean before giving up (KO)
+    fightTilt: 0.62,       // rad — leaning harder than this counts as losing
+    fightTime: 0.22,       // s of sustained heavy lean before giving up (KO)
     koTime: 1.4,           // s of limp comedy after a knockout
     recoverTime: 0.7,      // s to ramp gains back
     koImpactSpeed: 7.5,    // m/s body-part impact speed that knocks out
@@ -50,13 +50,13 @@ export const TUNING = {
   motors: {
     spine: { kp: 420, kd: 42, max: 480 },
     neck: { kp: 32, kd: 4, max: 40 },
-    shoulder: { kp: 65, kd: 7, max: 90 },   // raised while aiming (armAimBoost)
+    shoulder: { kp: 26, kd: 6, max: 42 },   // low kp: arm inertia is tiny, 60 Hz PD goes unstable above ~70
     hip: { kp: 260, kd: 26, max: 320 },
     // revolute (built-in rapier motors): stiffness/damping in solver units
     elbow: { stiffness: 55, damping: 8 },
     knee: { stiffness: 220, damping: 25 },
     ankle: { stiffness: 45, damping: 6 },
-    armAimBoost: 2.4,      // shoulder/elbow gain multiplier while that arm aims
+    armAimBoost: 1.6,      // shoulder/elbow gain multiplier while that arm aims
   },
 
   // --- locomotion ---
@@ -75,9 +75,12 @@ export const TUNING = {
   // --- arms / grab (Gate B) ---
   arms: {
     reach: 1.65,           // m max hand target distance from shoulder
-    grabBreakDistance: 0.14, // m of joint separation before the grip rips free
+    grabBreakDistance: 0.14, // m of spring stretch before the grip rips free
+    grabSpringK: 9000,       // N/m — max grip ≈ K×break ≈ 1260 N (can hang, can't hold a crane)
+    grabSpringDamping: 90,
     handSensorRadius: 0.07,
-    climbAssistForce: 380, // N up on pelvis when both hands latched + pushing forward
+    climbAssistForce: 950, // N up on pelvis when both hands latched + pushing forward
+    grabBreakTicks: 4,     // consecutive over-stretch ticks before the grip rips
   },
 
   net: {

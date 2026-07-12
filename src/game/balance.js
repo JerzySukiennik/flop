@@ -94,7 +94,8 @@ export class BalanceController {
     }
 
     // --- hover spring (the "balance capsule" without the capsule) ---
-    if (this.grounded && gain > 0.5) {
+    // Skipped while climbing: the climb lift replaces it (they'd fight).
+    if (this.grounded && gain > 0.5 && this.externalLift === 0) {
       const targetY = groundY + B.standHeight;
       const vy = pelvis.linvel().y;
       let f = B.hoverKp * (targetY - pPos.y) - B.hoverKd * vy;

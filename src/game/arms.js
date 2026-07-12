@@ -103,9 +103,13 @@ export class ArmsController {
         if (best) {
           const other = best.body;
           const otherLocal = qRotate(qConj(other.rotation()), vSub(handWorld, other.translation()));
-          const jd = RAPIER.JointData.spherical(HAND_LOCAL[side], otherLocal);
+          // Spring, not a hard joint: grip strength is finite by construction.
+          // Stretch beyond grabBreakDistance = force beyond budget → rips free.
+          const jd = RAPIER.JointData.spring(
+            0, A.grabSpringK, A.grabSpringDamping, HAND_LOCAL[side], otherLocal,
+          );
           const joint = world.createImpulseJoint(jd, forearm, other, true);
-          this.grabs[side] = { joint, otherBody: other, ownAnchorLocal: HAND_LOCAL[side], otherAnchorLocal: otherLocal };
+          this.grabs[side] = { joint, otherBody: other, ownAnchorLocal: HAND_LOCAL[side], otherAnchorLocal: otherLocal, overstretch: 0 };
         }
       } else {
         // --- break check: solver losing = separation beyond tolerance ---
@@ -113,7 +117,10 @@ export class ArmsController {
         if (!other.isValid()) { this.grabs[side] = null; continue; }
         const a1 = vAdd(forearm.translation(), qRotate(forearm.rotation(), grab.ownAnchorLocal));
         const a2 = vAdd(other.translation(), qRotate(other.rotation(), grab.otherAnchorLocal));
-        if (vLen(vSub(a1, a2)) > A.grabBreakDistance) this.releaseArm(world, side);
+        // Sustained overstretch = force beyond grip budget; transients forgiven.
+        if (vLen(vSub(a1, a2)) > A.grabBreakDistance) grab.overstretch++;
+        else grab.overstretch = 0;
+        if (grab.overstretch >= TUNING.arms.grabBreakTicks) this.releaseArm(world, side);
       }
     }
 
