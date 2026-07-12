@@ -246,7 +246,11 @@ export class Game {
       case 'grappleFire': this.audio?.play('click', { volume: 0.9 }); break;
       case 'levelChange':
         this.audio?.play('fanfare', { volume: 0.6 });
-        if (authoritative) this.changeLevel(ev.target);
+        // This event fires from INSIDE the fixed physics step (portal timer).
+        // Tearing the world down here would free rapier memory the ongoing
+        // step still walks over (→ "null pointer passed to rust" freeze).
+        // Defer to the top of the next frame.
+        if (authoritative) this._pendingLevel = ev.target;
         break;
       default: break;
     }
@@ -357,6 +361,11 @@ export class Game {
   // ---------- per-frame ----------
   update(elapsed) {
     if (!this.world) return;
+    if (this._pendingLevel) {
+      const target = this._pendingLevel;
+      this._pendingLevel = null;
+      this.changeLevel(target);
+    }
     const { sim, runtime, levelView, ragdollViews } = this.world;
     const rawInput = this.input.sample();
 
