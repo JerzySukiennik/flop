@@ -7,6 +7,7 @@ import { InputManager } from './ui/input.js';
 import { Hud } from './ui/hud.js';
 import { Menu, loadCustomization } from './ui/menu.js';
 import { EmoteWheel } from './ui/emoteWheel.js';
+import { AudioManager } from './render/audio.js';
 import { Game } from './game.js';
 
 async function boot() {
@@ -18,7 +19,9 @@ async function boot() {
   const input = new InputManager(renderer.domElement);
   const hud = new Hud();
   const customization = loadCustomization();
-  const game = new Game({ scene, camera, input, hud, customization });
+  const audio = new AudioManager();
+  document.addEventListener('pointerdown', () => audio.unlock(), { once: false });
+  const game = new Game({ scene, camera, input, hud, customization, audio });
   window.__flop = game; // debug/E2E hook
   new EmoteWheel((emoji) => game.sendEmote(emoji));
 
@@ -42,7 +45,7 @@ async function boot() {
       game.customization = loadCustomization();
       game.startSolo(new URLSearchParams(location.search).get('level') ?? 'hub');
       menu.hide(); hud.show();
-      renderer.domElement.requestPointerLock();
+      Promise.resolve(renderer.domElement.requestPointerLock()).catch(() => {});
     },
     onHost: async () => {
       try {
@@ -50,7 +53,7 @@ async function boot() {
         game.customization = loadCustomization();
         await game.startHost(await getSignalling(), 'hub');
         menu.hide(); hud.show();
-        renderer.domElement.requestPointerLock();
+        Promise.resolve(renderer.domElement.requestPointerLock()).catch(() => {});
       } catch (err) {
         console.error(err);
         menu.status(`host failed: ${err.message}`);
@@ -62,7 +65,7 @@ async function boot() {
         game.customization = loadCustomization();
         await game.startClient(await getSignalling(), code);
         menu.hide(); hud.show();
-        renderer.domElement.requestPointerLock();
+        Promise.resolve(renderer.domElement.requestPointerLock()).catch(() => {});
       } catch (err) {
         console.error(err);
         menu.status(`join failed: ${err.message}`);

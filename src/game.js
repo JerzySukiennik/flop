@@ -16,11 +16,14 @@ const deflate = (u8) => deflateSync(u8);
 const inflate = (u8) => inflateSync(u8);
 
 export class Game {
-  constructor({ scene, camera, input, hud, customization }) {
+  constructor({ scene, camera, input, hud, customization, audio }) {
     this.scene = scene;
     this.camera = camera;
     this.input = input;
     this.hud = hud;
+    this.audio = audio;
+    this._prevKo = false;
+    this._prevJump = false;
     this.customization = customization;   // local player's {color, hat, name}
     this.customBySlot = {};               // networked customizations
     this.mode = null;                     // 'solo' | 'host' | 'client'
@@ -54,6 +57,7 @@ export class Game {
     this.world = { sim, runtime, level, levelView, ragdollViews };
     this.levelName = levelName;
     runtime.onEvent = (ev) => this._onGameEvent(ev, true);
+    this.audio?.setAmbience(level.sky);
     return this.world;
   }
 
@@ -230,13 +234,18 @@ export class Game {
       this.hostSession.broadcastEvent({ t: 'game', ev });
     }
     switch (ev.t) {
-      case 'checkpoint': this.hud.message('✓ checkpoint'); break;
-      case 'respawn': if (ev.slot === this.localSlot) this.hud.message('back to checkpoint…'); break;
-      case 'portalArmed': this.hud.message(`portal → ${ev.target} in ${ev.seconds}s — pile in!`, 4500); break;
-      case 'lever': this.hud.message(ev.active ? '⚙ lever ON' : '⚙ lever off', 1200); break;
-      case 'valve': this.hud.message('⚙ gate open!'); break;
-      case 'grapplePickup': if (ev.slot === this.localSlot) this.hud.message('🪝 grappling hook! press E to fire'); break;
+      case 'checkpoint': this.hud.message('✓ checkpoint'); this.audio?.play('confirm', { volume: 0.7 }); break;
+      case 'respawn':
+        if (ev.slot === this.localSlot) this.hud.message('back to checkpoint…');
+        this.audio?.play('thud', { volume: 0.5 });
+        break;
+      case 'portalArmed': this.hud.message(`portal → ${ev.target} in ${ev.seconds}s — pile in!`, 4500); this.audio?.play('jingle', { volume: 0.55 }); break;
+      case 'lever': this.hud.message(ev.active ? '⚙ lever ON' : '⚙ lever off', 1200); this.audio?.play('click'); break;
+      case 'valve': this.hud.message('⚙ gate open!'); this.audio?.play('confirm', { volume: 0.7 }); break;
+      case 'grapplePickup': if (ev.slot === this.localSlot) { this.hud.message('🪝 grappling hook! press E to fire'); this.audio?.play('confirm', { volume: 0.7 }); } break;
+      case 'grappleFire': this.audio?.play('click', { volume: 0.9 }); break;
       case 'levelChange':
+        this.audio?.play('fanfare', { volume: 0.6 });
         if (authoritative) this.changeLevel(ev.target);
         break;
       default: break;
@@ -266,6 +275,7 @@ export class Game {
   }
 
   sendEmote(emoji) {
+    this.audio?.play('click', { volume: 0.6, rate: 1.3 });
     this.world?.ragdollViews[this.localSlot]?.showEmote(emoji);
     if (this.mode === 'client') this.clientSession?.sendEvent({ t: 'emote', emoji, relay: true });
     else this.hostSession?.broadcastEvent({ t: 'emote', emoji, fromSlot: this.localSlot });
@@ -409,6 +419,21 @@ export class Game {
       this._updateGrappleLines(sim);
     }
     for (const v of ragdollViews) v.tickEmote(elapsed);
+
+    // --- local player sound cues ---
+    if (this.audio) {
+      let ko = false;
+      if (this.mode === 'client') {
+        const interp = this.clientSession?.buffer.at(-1);
+        ko = !!(interp?.players[this.localSlot]?.flags & 1);
+      } else {
+        ko = sim.players[this.localSlot]?.balance.state === 'ko';
+      }
+      if (ko && !this._prevKo) { this.audio.play('grunt', { volume: 0.9 }); this.audio.play('thud', { volume: 0.8 }); }
+      this._prevKo = ko;
+      if (rawInput.jump && !this._prevJump && !this.freeCam) this.audio.play('grunt', { volume: 0.45, rate: 1.15 });
+      this._prevJump = rawInput.jump;
+    }
 
     // --- camera ---
     if (this.freeCam) {

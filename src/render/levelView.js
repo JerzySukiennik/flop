@@ -2,7 +2,12 @@
 // Textures come from the vendored asset library (materials.js); until the
 // asset pass lands, materials fall back to flat colors.
 import * as THREE from 'three';
+import { RGBELoader } from 'three/addons/loaders/RGBELoader.js';
 import { getMaterial } from './materials.js';
+
+const BASE = import.meta.env.BASE_URL ?? '/';
+const HDRI_BY_SKY = { day: 'hdri-day', sunset: 'hdri-sunset', dusk: 'hdri-dusk' };
+const hdriCache = new Map();
 
 const SKY = {
   day: { bg: 0x87a8c8, fog: [40, 140], sun: 0xfff2dd, sunI: 2.6 },
@@ -20,6 +25,19 @@ export class LevelView {
     const sky = SKY[level.sky] ?? SKY.day;
     scene.background = new THREE.Color(sky.bg);
     scene.fog = new THREE.Fog(sky.bg, sky.fog[0], sky.fog[1]);
+
+    // HDRI image-based lighting (Poly Haven, vendored). Async — flat lights
+    // carry the frame until it lands; background stays fog-colored.
+    const hdriId = HDRI_BY_SKY[level.sky] ?? 'hdri-day';
+    if (hdriCache.has(hdriId)) {
+      scene.environment = hdriCache.get(hdriId);
+    } else {
+      new RGBELoader().load(`${BASE}assets/${hdriId}/sky.hdr`, (tex) => {
+        tex.mapping = THREE.EquirectangularReflectionMapping;
+        hdriCache.set(hdriId, tex);
+        scene.environment = tex;
+      }, undefined, () => { /* IBL is a bonus, not a dependency */ });
+    }
 
     const makeMesh = (def) => {
       let geo;

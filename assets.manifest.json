@@ -1,4 +1,251 @@
 {
   "comment": "Every third-party asset. fetch-assets.mjs downloads, sha256-verifies, unpacks into public/assets/<id>/. License policy: CC0 or CC-BY only.",
-  "assets": []
+  "assets": [
+    {
+      "id": "tex-wood",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/get?file=Planks021_1K-JPG.zip",
+      "license": "CC0",
+      "author": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Planks021",
+      "keep": [
+        "Color\\.jpg$",
+        "NormalGL\\.jpg$",
+        "Roughness\\.jpg$"
+      ],
+      "sha256": "9a593ffe4194132bd8c881558b47107f2c3c739018bbdad12fca5d877c90746a",
+      "rename": [
+        {
+          "from": "_Color\\.jpg$",
+          "to": "color.jpg"
+        },
+        {
+          "from": "_NormalGL\\.jpg$",
+          "to": "normal.jpg"
+        },
+        {
+          "from": "_Roughness\\.jpg$",
+          "to": "rough.jpg"
+        }
+      ]
+    },
+    {
+      "id": "tex-concrete",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/get?file=Concrete034_1K-JPG.zip",
+      "license": "CC0",
+      "author": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Concrete034",
+      "keep": [
+        "Color\\.jpg$",
+        "NormalGL\\.jpg$",
+        "Roughness\\.jpg$"
+      ],
+      "sha256": "5839d284d94ffb8d2a56df742ec522b13dd311c52dbd42b8fd33f0409ceedb81",
+      "rename": [
+        {
+          "from": "_Color\\.jpg$",
+          "to": "color.jpg"
+        },
+        {
+          "from": "_NormalGL\\.jpg$",
+          "to": "normal.jpg"
+        },
+        {
+          "from": "_Roughness\\.jpg$",
+          "to": "rough.jpg"
+        }
+      ]
+    },
+    {
+      "id": "tex-metal",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/get?file=Metal032_1K-JPG.zip",
+      "license": "CC0",
+      "author": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Metal032",
+      "keep": [
+        "Color\\.jpg$",
+        "NormalGL\\.jpg$",
+        "Roughness\\.jpg$"
+      ],
+      "sha256": "9e4f363905a647958c273154fa125d2a6440892d0e583f9b3af24bb08b5afc3c",
+      "rename": [
+        {
+          "from": "_Color\\.jpg$",
+          "to": "color.jpg"
+        },
+        {
+          "from": "_NormalGL\\.jpg$",
+          "to": "normal.jpg"
+        },
+        {
+          "from": "_Roughness\\.jpg$",
+          "to": "rough.jpg"
+        }
+      ]
+    },
+    {
+      "id": "tex-stone",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/get?file=Bricks097_1K-JPG.zip",
+      "license": "CC0",
+      "author": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Bricks097",
+      "keep": [
+        "Color\\.jpg$",
+        "NormalGL\\.jpg$",
+        "Roughness\\.jpg$"
+      ],
+      "sha256": "97b5df360161e48bcfed609aef361e8115b680ddc0aea4ad9321d4b00e222ad0",
+      "rename": [
+        {
+          "from": "_Color\\.jpg$",
+          "to": "color.jpg"
+        },
+        {
+          "from": "_NormalGL\\.jpg$",
+          "to": "normal.jpg"
+        },
+        {
+          "from": "_Roughness\\.jpg$",
+          "to": "rough.jpg"
+        }
+      ]
+    },
+    {
+      "id": "tex-grass",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/get?file=Grass004_1K-JPG.zip",
+      "license": "CC0",
+      "author": "ambientCG",
+      "page": "https://ambientcg.com/view?id=Grass004",
+      "keep": [
+        "Color\\.jpg$",
+        "NormalGL\\.jpg$",
+        "Roughness\\.jpg$"
+      ],
+      "sha256": "4b63495f459db8481f4d5144e4e9069345c81cf898cc71f2216f5dd3bb344469",
+      "rename": [
+        {
+          "from": "_Color\\.jpg$",
+          "to": "color.jpg"
+        },
+        {
+          "from": "_NormalGL\\.jpg$",
+          "to": "normal.jpg"
+        },
+        {
+          "from": "_Roughness\\.jpg$",
+          "to": "rough.jpg"
+        }
+      ]
+    },
+    {
+      "id": "tex-plate",
+      "source": "ambientCG",
+      "url": "https://ambientcg.com/get?file=MetalPlates006_1K-JPG.zip",
+      "license": "CC0",
+      "author": "ambientCG",
+      "page": "https://ambientcg.com/view?id=MetalPlates006",
+      "keep": [
+        "Color\\.jpg$",
+        "NormalGL\\.jpg$",
+        "Roughness\\.jpg$"
+      ],
+      "sha256": "0b7d3736bf76103f158bc2f550e28b54a2ea9ba553c9253ac172eca3bafb02b5",
+      "rename": [
+        {
+          "from": "_Color\\.jpg$",
+          "to": "color.jpg"
+        },
+        {
+          "from": "_NormalGL\\.jpg$",
+          "to": "normal.jpg"
+        },
+        {
+          "from": "_Roughness\\.jpg$",
+          "to": "rough.jpg"
+        }
+      ]
+    },
+    {
+      "id": "hdri-day",
+      "source": "Poly Haven",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/kloofendal_48d_partly_cloudy_puresky_1k.hdr",
+      "license": "CC0",
+      "author": "Greg Zaal (Poly Haven)",
+      "page": "https://polyhaven.com/a/kloofendal_48d_partly_cloudy_puresky",
+      "filename": "sky.hdr",
+      "sha256": "fd94c84997b8a3c353b62c2125a9b44e19509956986a126e472684432a02d798"
+    },
+    {
+      "id": "hdri-sunset",
+      "source": "Poly Haven",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/industrial_sunset_puresky_1k.hdr",
+      "license": "CC0",
+      "author": "Jarod Guest / Sergej Majboroda (Poly Haven)",
+      "page": "https://polyhaven.com/a/industrial_sunset_puresky",
+      "filename": "sky.hdr",
+      "sha256": "ce8235e4b1b10b620120ceeb32eb3e80af15ea29b09a8625a4bdae647dff328d"
+    },
+    {
+      "id": "hdri-dusk",
+      "source": "Poly Haven",
+      "url": "https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/belfast_sunset_1k.hdr",
+      "license": "CC0",
+      "author": "Greg Zaal (Poly Haven)",
+      "page": "https://polyhaven.com/a/belfast_sunset",
+      "filename": "sky.hdr",
+      "sha256": "e27bf04b30ae70cf9b5681b896ee07e2dbbaafc78d0ce5623251f4705de0d65d"
+    },
+    {
+      "id": "sfx-impact",
+      "source": "Kenney",
+      "url": "https://kenney.nl/media/pages/assets/impact-sounds/87b4ddecda-1677589768/kenney_impact-sounds.zip",
+      "license": "CC0",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/impact-sounds",
+      "keep": [
+        "impact.*\\.ogg$"
+      ],
+      "sha256": "029d734af1582474edf3a694d1b0cebc97c1c152f2f39fa34d4c2bafc5de77f8"
+    },
+    {
+      "id": "sfx-ui",
+      "source": "Kenney",
+      "url": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+      "license": "CC0",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/interface-sounds",
+      "keep": [
+        "(click|confirmation|select).*\\.ogg$"
+      ],
+      "sha256": "f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232"
+    },
+    {
+      "id": "sfx-grunts",
+      "source": "Kenney",
+      "url": "https://kenney.nl/media/pages/assets/voiceover-pack-fighter/6ceb77c6f1-1677589837/kenney_voiceover-pack-fighter.zip",
+      "license": "CC0",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/voiceover-pack-fighter",
+      "keep": [
+        "Audio/\\d+\\.ogg$"
+      ],
+      "sha256": "368ac0711e59521aff965a833e22e2b5218c397cf8b059ce3cb72e8d13219ee2"
+    },
+    {
+      "id": "music-jingles",
+      "source": "Kenney",
+      "url": "https://kenney.nl/media/pages/assets/music-jingles/f37e530b9e-1677590399/kenney_music-jingles.zip",
+      "license": "CC0",
+      "author": "Kenney",
+      "page": "https://kenney.nl/assets/music-jingles",
+      "keep": [
+        "jingles_(NES|PIZZA)[^/]*\\.ogg$"
+      ],
+      "sha256": "b729ba57959bd58793d2c5cafa348aaf2655d354f3da35ec4729e03ec77197b8"
+    }
+  ]
 }

@@ -11,7 +11,7 @@ export class InputManager {
     this.onEmote = null; // wired by emote wheel
 
     canvas.addEventListener('click', () => {
-      if (!this.locked) canvas.requestPointerLock();
+      if (!this.locked) Promise.resolve(canvas.requestPointerLock()).catch(() => {});
     });
     document.addEventListener('pointerlockchange', () => {
       this.locked = document.pointerLockElement === canvas;

@@ -44,8 +44,11 @@ async function processAsset(asset, manifestDirty) {
     let count = 0;
     for (const [name, data] of Object.entries(files)) {
       if (name.endsWith('/') || data.length === 0) continue;
-      const flat = asset.flatten === false ? name.replaceAll('/', '__') : basename(name);
+      let flat = asset.flatten === false ? name.replaceAll('/', '__') : basename(name);
       if (asset.keep && !asset.keep.some((pat) => new RegExp(pat, 'i').test(name))) continue;
+      for (const r of asset.rename ?? []) {
+        if (new RegExp(r.from, 'i').test(flat)) { flat = r.to; break; }
+      }
       await writeFile(join(dir, flat), data);
       count++;
     }
