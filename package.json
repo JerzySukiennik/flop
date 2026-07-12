@@ -1,0 +1,28 @@
+{
+  "name": "flop",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "fetch-assets": "node scripts/fetch-assets.mjs",
+    "gate:a": "node tests/gate-a-ragdoll.mjs",
+    "gate:b": "node tests/gate-b-grab.mjs",
+    "gate:c": "node tests/gate-c-determinism.mjs",
+    "gate:d": "node tests/gate-d-netcode.mjs",
+    "gate:e": "playwright test tests/gate-e-smoke.spec.js",
+    "gates": "npm run gate:a && npm run gate:b && npm run gate:c && npm run gate:d"
+  },
+  "dependencies": {
+    "@dimforge/rapier3d-compat": "^0.19.3",
+    "fflate": "^0.8.3",
+    "firebase": "^12.16.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.1",
+    "vite": "^8.1.4"
+  }
+}
