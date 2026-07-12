@@ -20,6 +20,10 @@ export class Sim {
     this.world.timestep = TUNING.dt;
     this.tick = 0;
     this.players = [null, null, null, null]; // slot-indexed, fixed size
+    // Slots with a human attached. The RECIPE always builds 4 ragdolls
+    // (parked off-map when unused) so world structure never changes on
+    // join/leave — that's what keeps manifest hashes stable (§5.3).
+    this.activeSlots = new Set();
     this.entities = [];      // creation-order registry: {id, body, type}
     this.manifest = [];      // creation-order ids — hashed for §5.3 guard
     this.accumulator = 0;
@@ -68,16 +72,20 @@ export class Sim {
     return player;
   }
 
-  removePlayer(slot) {
+  /** Human joins slot: teleport parked ragdoll in, activate. */
+  activatePlayer(slot, pos) {
+    this.activeSlots.add(slot);
+    this.respawnPlayer(slot, pos);
+  }
+
+  /** Human leaves: release grips, park the ragdoll off-map, deactivate. */
+  deactivatePlayer(slot) {
+    this.activeSlots.delete(slot);
     const p = this.players[slot];
     if (!p) return;
     p.arms.releaseAll(this.world);
-    for (const body of p.ragdoll.partList) this.world.removeRigidBody(body);
-    const prefix = `p${slot}b`;
-    this.entities = this.entities.filter((e) => !e.id.startsWith(prefix));
-    // NOTE: manifest keeps historical creation records; joins compare the
-    // *current* rebuild recipe (level + player slots), computed separately.
-    this.players[slot] = null;
+    p.input = DEFAULT_INPUT();
+    this.respawnPlayer(slot, { x: slot * 4 - 6, y: 0.2, z: -120 });
   }
 
   setInput(slot, input) {
@@ -89,13 +97,11 @@ export class Sim {
     const p = this.players[slot];
     if (!p) return;
     p.arms.releaseAll(this.world);
-    const { PARTS } = this.constructor._ragdollDefs ?? {};
     // Teleport all parts preserving the rest-pose offsets around the pelvis.
-    const pelvisRest = { x: 0, y: 0.98, z: 0 };
     for (const [i, body] of p.ragdoll.partList.entries()) {
       const rest = p.arms.restOffsets[i];
       body.setTranslation(
-        { x: pos.x + rest.x - pelvisRest.x + 0, y: pos.y + rest.y, z: pos.z + rest.z },
+        { x: pos.x + rest.x, y: pos.y + rest.y, z: pos.z + rest.z },
         true,
       );
       body.setRotation({ x: 0, y: 0, z: 0, w: 1 }, true);

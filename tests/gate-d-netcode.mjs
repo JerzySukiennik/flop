@@ -33,6 +33,8 @@ function buildSim() {
   // both players in the recipe: host slot 0, client slot 1
   sim.addPlayer(0, { x: 0, y: 0.05, z: 0 });
   sim.addPlayer(1, { x: 1.2, y: 0.05, z: 0 });
+  sim.activeSlots.add(0);
+  sim.activeSlots.add(1);
   return sim;
 }
 

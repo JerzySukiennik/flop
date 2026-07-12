@@ -1,0 +1,74 @@
+{
+  "name": "Flopstone Keep",
+  "sky": "dusk",
+  "killY": -8,
+  "statics": [
+    { "id": "park", "shape": "box", "pos": [0, -1.2, -120], "size": [12, 1, 8], "tex": "concrete" },
+    { "id": "field", "shape": "box", "pos": [0, -0.5, 4], "size": [16, 0.5, 12], "tex": "grass" },
+
+    { "id": "outerWall", "shape": "box", "pos": [0, 1.9, 12], "size": [7, 1.9, 0.6], "tex": "stone" },
+    { "id": "holdA", "shape": "box", "pos": [-1.2, 0.9, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
+    { "id": "holdB", "shape": "box", "pos": [-0.4, 1.7, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
+    { "id": "holdC", "shape": "box", "pos": [-1.4, 2.5, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
+    { "id": "holdD", "shape": "box", "pos": [-0.6, 3.3, 11.28], "size": [0.22, 0.12, 0.14], "tex": "stone" },
+    { "id": "wallWalk", "shape": "box", "pos": [0, 3.55, 12.9], "size": [7, 0.25, 1.5], "tex": "stone" },
+    { "id": "wallStairs", "shape": "box", "pos": [4.5, 1.7, 14.9], "size": [1.2, 1.9, 0.9], "rot": [38, 0, 0], "tex": "stone" },
+
+    { "id": "courtyard", "shape": "box", "pos": [0, -0.5, 24], "size": [12, 0.5, 10], "tex": "stone" },
+    { "id": "gateFrameL", "shape": "box", "pos": [-1.8, 1.7, 18.5], "size": [0.5, 1.7, 0.5], "tex": "stone" },
+    { "id": "gateFrameR", "shape": "box", "pos": [1.8, 1.7, 18.5], "size": [0.5, 1.7, 0.5], "tex": "stone" },
+    { "id": "gateTop", "shape": "box", "pos": [0, 3.7, 18.5], "size": [2.3, 0.4, 0.5], "tex": "stone" },
+    { "id": "winchBase", "shape": "box", "pos": [3.4, 0.65, 20.5], "size": [0.16, 0.65, 0.16], "tex": "metal" },
+
+    { "id": "moatNear", "shape": "box", "pos": [0, -0.5, 31.5], "size": [12, 0.5, 1.2], "tex": "stone" },
+    { "id": "moatFar", "shape": "box", "pos": [0, -0.5, 39.5], "size": [12, 0.5, 1.6], "tex": "stone" },
+    { "id": "bridgeTowerL", "shape": "box", "pos": [-2.4, 3.1, 32.3], "size": [0.25, 2.6, 0.25], "tex": "metal" },
+
+    { "id": "catapultDeck", "shape": "box", "pos": [0, -0.5, 46], "size": [10, 0.5, 6], "tex": "stone" },
+    { "id": "catBase", "shape": "box", "pos": [2.5, 0.75, 46], "size": [0.9, 0.35, 1.6], "tex": "wood" },
+    { "id": "catLeverBase", "shape": "box", "pos": [4.2, 0.5, 45], "size": [0.15, 0.3, 0.15], "tex": "metal" },
+    { "id": "rampartWall", "shape": "box", "pos": [-6, 3.4, 46], "size": [1.2, 3.4, 4.5], "tex": "stone" },
+    { "id": "rampartTop", "shape": "box", "pos": [-6, 7.05, 46], "size": [2.6, 0.25, 4.5], "tex": "stone" },
+    { "id": "throne", "shape": "box", "pos": [-6, 7.9, 48.5], "size": [0.5, 0.6, 0.4], "tex": "plate", "color": 16766020 },
+    { "id": "exitPadBase", "shape": "box", "pos": [-6, 7.4, 43.5], "size": [1.4, 0.1, 1.4], "tex": "plate", "color": 7864183 }
+  ],
+  "dynamics": [
+    { "id": "portcullis", "shape": "box", "pos": [0, 1.55, 18.5], "size": [1.35, 1.5, 0.12], "mass": 120, "tex": "metal" },
+    { "id": "winchWheel", "shape": "cylinder", "pos": [3.4, 1.6, 20.5], "size": [0.09, 0.5], "mass": 8, "rot": [0, 0, 90], "tex": "metal" },
+    { "id": "drawbridge", "shape": "box", "pos": [0, 3.4, 34.4], "size": [1.4, 0.09, 2.4], "mass": 90, "tex": "wood" },
+    { "id": "bridgeWeight", "shape": "box", "pos": [-2.4, 1.4, 30.4], "size": [0.5, 0.5, 0.5], "mass": 80, "tex": "metal" },
+    { "id": "catArm", "shape": "box", "pos": [2.5, 1.5, 46.6], "size": [0.18, 0.09, 2.1], "mass": 26, "tex": "wood" },
+    { "id": "catBucket", "shape": "box", "pos": [2.5, 1.75, 48.4], "size": [0.45, 0.18, 0.45], "mass": 8, "tex": "wood" },
+    { "id": "catLever", "shape": "box", "pos": [4.2, 1.05, 45], "size": [0.06, 0.35, 0.06], "mass": 4, "color": 16729156 },
+    { "id": "ammoCrate", "shape": "box", "pos": [4.5, 0.4, 47.5], "size": [0.4, 0.4, 0.4], "mass": 20, "tex": "wood" }
+  ],
+  "ropes": [
+    { "id": "weightRope", "from": [-2.4, 5.55, 32.3], "segments": 5, "length": 3.2, "anchor": "s:bridgeTowerL", "attach": "d:bridgeWeight", "segmentMass": 2 }
+  ],
+  "joints": [
+    { "id": "gateSlide", "type": "prismatic", "a": "s:gateTop", "b": "d:portcullis", "anchor": [0, 1.55, 18.5], "axis": [0, 1, 0], "limits": [0, 2.5], "motor": { "target": 0, "stiffness": 42000, "damping": 4000 } },
+    { "id": "winchHinge", "type": "revolute", "a": "s:winchBase", "b": "d:winchWheel", "anchor": [3.4, 1.6, 20.5], "axis": [1, 0, 0], "motor": { "target": 0, "stiffness": 4, "damping": 6 } },
+    { "id": "bridgeHinge", "type": "revolute", "a": "s:moatNear", "b": "d:drawbridge", "anchor": [0, 0.15, 32.5], "axis": [1, 0, 0], "limits": [-0.06, 1.5] },
+    { "id": "catHinge", "type": "revolute", "a": "s:catBase", "b": "d:catArm", "anchor": [2.5, 1.25, 46], "axis": [1, 0, 0], "limits": [-1.35, 0.35], "motor": { "target": 0.32, "stiffness": 900, "damping": 60 } },
+    { "id": "bucketMount", "type": "spherical", "a": "d:catArm", "b": "d:catBucket", "anchor": [2.5, 1.6, 48.3] },
+    { "id": "catLeverHinge", "type": "revolute", "a": "s:catLeverBase", "b": "d:catLever", "anchor": [4.2, 0.75, 45], "axis": [0, 0, 1], "limits": [-0.7, 0.7], "motor": { "target": -0.55, "stiffness": 50, "damping": 45 } }
+  ],
+  "levers": [
+    { "id": "fireCatapult", "joint": "catLeverHinge", "threshold": 0.25,
+      "action": { "joint": "catHinge", "on": -1.3, "off": 0.32, "stiffness": 60000, "damping": 900 } }
+  ],
+  "valves": [
+    { "id": "gateWinch", "joint": "winchHinge", "turns": 9.4, "gateJoint": "gateSlide",
+      "gateMotor": { "closed": 0, "open": 2.5, "stiffness": 42000, "damping": 4000 } }
+  ],
+  "checkpoints": [
+    { "pos": [0, 0.4, 2], "size": [6, 2, 4] },
+    { "pos": [0, 4.1, 12.9], "size": [7, 1.4, 1.5] },
+    { "pos": [0, 0.4, 24], "size": [6, 2, 4] },
+    { "pos": [0, 0.4, 46], "size": [5, 2, 5] },
+    { "pos": [-6, 7.8, 46], "size": [2.6, 1.4, 4.5] }
+  ],
+  "portals": [
+    { "pos": [-6, 8.3, 43.5], "size": [1.4, 1.0, 1.4], "target": "hub", "label": "Back to the Yard" }
+  ]
+}

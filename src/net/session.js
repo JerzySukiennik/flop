@@ -45,14 +45,14 @@ export class HostSession {
     if (!peer) return;
     this.peers.delete(peerId);
     this.joinOrder = this.joinOrder.filter((id) => id !== peerId);
-    this.sim.removePlayer(peer.slot);
+    this.sim.deactivatePlayer(peer.slot);
     this.broadcastEvent({ t: 'roster', roster: this.roster() });
   }
 
   roster() {
     const r = [];
     for (let slot = 0; slot < 4; slot++) {
-      if (!this.sim.players[slot]) continue;
+      if (!this.sim.players[slot] || !this.sim.activeSlots.has(slot)) continue;
       const peer = [...this.peers.values()].find((p) => p.slot === slot);
       r.push({ slot, peerId: peer ? peer.peerId : 'host' });
     }

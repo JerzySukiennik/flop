@@ -93,7 +93,9 @@ export function encodeState(sim, propEntities) {
   let playerMask = 0;
   const activePlayers = [];
   for (let i = 0; i < 4; i++) {
-    if (sim.players[i]) { playerMask |= 1 << i; activePlayers.push(sim.players[i]); }
+    if (sim.players[i] && sim.activeSlots.has(i)) {
+      playerMask |= 1 << i; activePlayers.push(sim.players[i]);
+    }
   }
   const awakeProps = [];
   for (const e of propEntities) {

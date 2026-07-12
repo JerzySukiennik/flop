@@ -1,0 +1,62 @@
+{
+  "name": "Site 7",
+  "sky": "day",
+  "killY": -8,
+  "statics": [
+    { "id": "park", "shape": "box", "pos": [0, -1.2, -120], "size": [12, 1, 8], "tex": "concrete" },
+    { "id": "startPad", "shape": "box", "pos": [0, -0.5, 0], "size": [6, 0.5, 6], "tex": "concrete" },
+
+    { "id": "scafPoleA", "shape": "box", "pos": [-1.6, 1.6, 8], "size": [0.12, 1.6, 0.12], "tex": "metal" },
+    { "id": "scafPoleB", "shape": "box", "pos": [1.6, 1.6, 8], "size": [0.12, 1.6, 0.12], "tex": "metal" },
+    { "id": "scafDeckLow", "shape": "box", "pos": [0, 1.15, 6.7], "size": [1.8, 0.07, 0.55], "tex": "wood" },
+    { "id": "scafTop", "shape": "box", "pos": [0, 3.15, 8], "size": [2.0, 0.09, 0.8], "tex": "wood" },
+
+    { "id": "gapNear", "shape": "box", "pos": [0, 2.6, 12], "size": [2.2, 0.5, 1.4], "tex": "concrete" },
+    { "id": "gapFar", "shape": "box", "pos": [0, 2.6, 18.6], "size": [2.2, 0.5, 1.4], "tex": "concrete" },
+
+    { "id": "liftBase", "shape": "box", "pos": [0, 2.6, 23.5], "size": [2.2, 0.5, 1.6], "tex": "concrete" },
+    { "id": "liftTower", "shape": "box", "pos": [-2.9, 5.0, 26.5], "size": [0.3, 3.4, 0.3], "tex": "metal" },
+    { "id": "leverBase", "shape": "box", "pos": [1.6, 3.35, 23.5], "size": [0.18, 0.25, 0.18], "tex": "metal" },
+    { "id": "upperDeck", "shape": "box", "pos": [0, 6.1, 30], "size": [3.0, 0.5, 2.4], "tex": "concrete" },
+
+    { "id": "craneTower", "shape": "box", "pos": [5.5, 5.4, 36], "size": [0.45, 4.8, 0.45], "tex": "metal" },
+    { "id": "craneArm", "shape": "box", "pos": [1.5, 10.1, 36], "size": [4.5, 0.25, 0.25], "tex": "metal" },
+    { "id": "landingDeck", "shape": "box", "pos": [-6.5, 5.6, 36], "size": [2.6, 0.5, 2.6], "tex": "concrete" },
+
+    { "id": "ledgeWall", "shape": "box", "pos": [-6.5, 7.6, 41.2], "size": [2.6, 1.5, 0.4], "tex": "concrete" },
+    { "id": "finalDeck", "shape": "box", "pos": [-6.5, 8.6, 45], "size": [3.0, 0.5, 3.4], "tex": "concrete" },
+    { "id": "exitPadBase", "shape": "box", "pos": [-6.5, 9.2, 47.5], "size": [1.6, 0.1, 1.6], "tex": "plate", "color": 7864183 }
+  ],
+  "dynamics": [
+    { "id": "scafPlankA", "shape": "box", "pos": [0, 2.35, 8], "size": [1.7, 0.07, 0.65], "mass": 18, "tex": "wood" },
+    { "id": "bridgePlank", "shape": "box", "pos": [1.4, 3.2, 12.2], "size": [0.5, 0.07, 2.6], "mass": 26, "tex": "wood" },
+    { "id": "liftPlatform", "shape": "box", "pos": [0, 3.35, 26.5], "size": [1.6, 0.12, 1.4], "mass": 60, "tex": "plate" },
+    { "id": "leverArm", "shape": "box", "pos": [1.6, 3.95, 23.5], "size": [0.07, 0.4, 0.07], "mass": 4, "color": 16729156 },
+    { "id": "hookBall", "shape": "ball", "pos": [1.5, 6.0, 36], "size": [0.35], "mass": 30, "tex": "metal" },
+    { "id": "stairCrate1", "shape": "box", "pos": [-5.2, 6.6, 38.5], "size": [0.5, 0.5, 0.5], "mass": 14, "tex": "wood" },
+    { "id": "stairCrate2", "shape": "box", "pos": [-7.6, 6.6, 38.6], "size": [0.5, 0.5, 0.5], "mass": 14, "tex": "wood" },
+    { "id": "stairCrate3", "shape": "box", "pos": [-6.4, 6.6, 39.6], "size": [0.5, 0.5, 0.5], "mass": 14, "tex": "wood" }
+  ],
+  "ropes": [
+    { "id": "hookRope", "from": [-1.5, 9.85, 36], "segments": 6, "length": 3.6, "anchor": "s:craneArm", "attach": "d:hookBall", "segmentMass": 2.5 }
+  ],
+  "joints": [
+    { "id": "liftSlide", "type": "prismatic", "a": "s:liftTower", "b": "d:liftPlatform", "anchor": [0, 3.35, 26.5], "axis": [0, 1, 0], "limits": [0, 2.6], "motor": { "target": 0, "stiffness": 26000, "damping": 2600 } },
+    { "id": "leverHinge", "type": "revolute", "a": "s:leverBase", "b": "d:leverArm", "anchor": [1.6, 3.6, 23.5], "axis": [1, 0, 0], "limits": [-0.7, 0.7], "motor": { "target": -0.55, "stiffness": 50, "damping": 45 } }
+  ],
+  "levers": [
+    { "id": "liftLever", "joint": "leverHinge", "threshold": 0.25,
+      "action": { "joint": "liftSlide", "on": 2.6, "off": 0, "stiffness": 26000, "damping": 2600 } }
+  ],
+  "checkpoints": [
+    { "pos": [0, 0.4, 0], "size": [5, 2, 5] },
+    { "pos": [0, 3.6, 8], "size": [2.0, 1.4, 0.9] },
+    { "pos": [0, 3.4, 18.6], "size": [2.2, 1.6, 1.4] },
+    { "pos": [0, 6.9, 30], "size": [3.0, 1.6, 2.4] },
+    { "pos": [-6.5, 6.4, 36], "size": [2.6, 1.6, 2.6] },
+    { "pos": [-6.5, 9.4, 45], "size": [3.0, 1.6, 3.4] }
+  ],
+  "portals": [
+    { "pos": [-6.5, 10.2, 47.5], "size": [1.6, 1.1, 1.6], "target": "hub", "label": "Back to the Yard" }
+  ]
+}
