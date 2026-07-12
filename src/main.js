@@ -19,6 +19,7 @@ async function boot() {
   const hud = new Hud();
   const customization = loadCustomization();
   const game = new Game({ scene, camera, input, hud, customization });
+  window.__flop = game; // debug/E2E hook
   new EmoteWheel((emoji) => game.sendEmote(emoji));
 
   if (new URLSearchParams(location.search).get('debug')) {

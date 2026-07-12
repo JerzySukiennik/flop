@@ -101,7 +101,7 @@ export class Game {
     this.roomCode = await sig.createLobby(`${this.customization.name || 'Flopper'}'s game`, levelName);
     this.hostSession = new HostSession(sim, { now, deflate, localSlot: 0 });
     this.hostSession.generation = this.generation;
-    this.hostSession.joinOrder.push(sig.uid);
+    this.hostSession.joinOrder.push(sig.peerId);
     this.hostSession.onEvent = (slot, ev) => this._onPeerEvent(slot, ev);
     this.dialer = createDialer(sig, this.roomCode);
     sig.listenInbox(this.roomCode, (msg) => {
@@ -110,6 +110,19 @@ export class Game {
     this.hud.setRoom(this.roomCode);
     this._refreshRosterHud();
     this.hud.message(`Hosting — room code ${this.roomCode}`, 5000);
+
+    // rAF freezes in hidden tabs — keep the authoritative sim + broadcasts
+    // alive from a timer (clamped to ~1 Hz in background, enough to stop
+    // clients from declaring host death and migrating away).
+    this._lastHostTick = performance.now();
+    clearInterval(this._bgTimer);
+    this._bgTimer = setInterval(() => {
+      if (this.mode !== 'host' || !document.hidden || !this.hostSession) return;
+      const t = performance.now();
+      const elapsed = Math.min((t - this._lastHostTick) / 1000, 1.5);
+      this._lastHostTick = t;
+      this.hostSession.update(elapsed);
+    }, 250);
   }
 
   async _acceptJoin(peerId, transport) {
@@ -127,8 +140,8 @@ export class Game {
       return;
     }
     transport.peerId = peerId;
+    sim.activatePlayer(slot, runtime.spawnPoint(slot)); // before addPeer so the roster broadcast includes them
     this.hostSession.addPeer(peerId, transport, slot);
-    sim.activatePlayer(slot, runtime.spawnPoint(slot));
     this.hostSession.broadcastEvent({
       t: 'welcome', forPeer: peerId, slot, level: this.levelName,
       generation: this.generation, customs: this.customBySlot,
@@ -179,7 +192,7 @@ export class Game {
 
   _onNetEvent(ev) {
     if (ev.t === 'welcome') {
-      if (ev.forPeer && ev.forPeer !== this.sig.uid) {
+      if (ev.forPeer && ev.forPeer !== this.sig.peerId) {
         if (ev.customs) for (const [slot, c] of Object.entries(ev.customs)) this._applyCustomization(+slot, c);
         return;
       }
@@ -275,14 +288,22 @@ export class Game {
   async _checkMigration() {
     const cs = this.clientSession;
     if (!cs || this._migrating || !cs.hostTimedOut()) return;
-    if (!cs.lastFull) { this.hud.message('host lost — no snapshot, back to menu', 5000); this.mode = 'dead'; return; }
+    if (!cs.lastFull) {
+      // No warm-standby snapshot yet — give a fresh join a long grace period
+      // before declaring the session dead.
+      if (now() - cs.lastHostHeard > 15000) {
+        this.hud.message('host lost — no snapshot, back to menu', 5000);
+        this.mode = 'dead';
+      }
+      return;
+    }
     this._migrating = true;
     this.hud.message('host lost — migrating…', 3000);
     const roster = cs.lastFull.roster ?? cs.roster;
     const peers = roster.map((r) => (r.peerId === 'host' ? this.currentHostId : r.peerId))
       .filter((id) => id !== this.currentHostId);
     const winner = electHost(peers);
-    if (winner === this.sig.uid) {
+    if (winner === this.sig.peerId) {
       // I become the host.
       promoteToHost(RAPIER, this.world.sim, cs.lastFull.bytes);
       this.world.sim.activeSlots.clear();
@@ -292,7 +313,7 @@ export class Game {
       }
       this.world.sim.activeSlots.delete(slotByPeer.get(this.currentHostId)); // dead host leaves
       this.mode = 'host';
-      this.localSlot = slotByPeer.get(this.sig.uid) ?? this.localSlot;
+      this.localSlot = slotByPeer.get(this.sig.peerId) ?? this.localSlot;
       this.clientSession = null;
       this.hostSession = new HostSession(this.world.sim, { now, deflate, localSlot: this.localSlot });
       this.hostSession.generation = this.generation;
@@ -346,10 +367,16 @@ export class Game {
       sim.advance(elapsed);
     } else if (this.mode === 'host') {
       sim.setInput(this.localSlot, simInput);
+      this._lastHostTick = performance.now();
       this.hostSession.update(elapsed);
     } else if (this.mode === 'client') {
       this.clientSession?.update(simInput);
       this._checkMigration();
+      // roster arrives via events/snapmeta — keep the HUD in sync (throttled)
+      if (!this._lastRosterSync || now() - this._lastRosterSync > 1500) {
+        this._lastRosterSync = now();
+        if (this.clientSession?.roster?.length) this._refreshRosterHud(this.clientSession.roster);
+      }
     }
 
     // --- render state ---

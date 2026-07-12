@@ -32,7 +32,11 @@ export class RtcTransport {
   _wireChannel(name, ch) {
     ch.binaryType = 'arraybuffer';
     this.channels[name] = ch;
-    ch.onopen = () => { if (++this._openCount === 2) this._openResolve(); };
+    const countOpen = () => { if (++this._openCount === 2) this._openResolve(); };
+    // The channel may already be open by the time we wire it (ondatachannel
+    // can deliver an open channel) — onopen would never fire then.
+    if (ch.readyState === 'open') countOpen();
+    else ch.onopen = countOpen;
     ch.onmessage = (e) => { for (const cb of this._msgHandlers) cb(name, e.data); };
     ch.onclose = () => this._fireClose();
   }
@@ -52,15 +56,31 @@ export class RtcTransport {
     await this.pc.setRemoteDescription(offer);
     const answer = await this.pc.createAnswer();
     await this.pc.setLocalDescription(answer);
+    await this._flushPendingCandidates();
     return answer;
   }
 
   async acceptAnswer(answer) {
     await this.pc.setRemoteDescription(answer);
+    await this._flushPendingCandidates();
   }
 
+  /** Candidates can arrive over signalling before the remote description is
+   * set (messages process concurrently) — buffer them or they're lost. */
   async addIceCandidate(candidate) {
+    if (!this.pc.remoteDescription) {
+      (this._pendingCandidates ??= []).push(candidate);
+      return;
+    }
     try { await this.pc.addIceCandidate(candidate); } catch { /* late/dup */ }
+  }
+
+  async _flushPendingCandidates() {
+    const pending = this._pendingCandidates ?? [];
+    this._pendingCandidates = [];
+    for (const c of pending) {
+      try { await this.pc.addIceCandidate(c); } catch { /* late/dup */ }
+    }
   }
 
   send(channel, data) {

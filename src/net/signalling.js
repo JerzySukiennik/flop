@@ -29,7 +29,13 @@ export class Signalling {
   async signIn() {
     const cred = await signInAnonymously(this.auth);
     this.uid = cred.user.uid;
-    return this.uid;
+    // Two tabs in one browser share the anonymous uid — suffix a per-session
+    // tag so a player can join a lobby hosted from the same browser profile.
+    // Rules key signal nodes on beginsWith(auth.uid).
+    const tag = [...crypto.getRandomValues(new Uint8Array(3))]
+      .map((b) => b.toString(36).slice(-1)).join('');
+    this.peerId = `${this.uid}-${tag}`;
+    return this.peerId;
   }
 
   randomCode() {
@@ -44,7 +50,7 @@ export class Signalling {
     const lobbyRef = ref(this.db, `lobbies/${code}`);
     await set(lobbyRef, {
       name: name || `${code} party`,
-      hostPeerId: this.uid,
+      hostPeerId: this.peerId,
       hostUid: this.uid,
       playerCount: 1,
       maxPlayers: 4,
@@ -72,7 +78,7 @@ export class Signalling {
     const old = snap.val() ?? {};
     await set(lobbyRef, {
       name: old.name ?? `${code} party`,
-      hostPeerId: this.uid,
+      hostPeerId: this.peerId,
       hostUid: this.uid,
       playerCount,
       maxPlayers: 4,
@@ -113,14 +119,14 @@ export class Signalling {
   /** Start receiving my inbox for a room; returns unsubscribe. */
   listenInbox(code, onMsg) {
     this.room = code;
-    const inboxRef = ref(this.db, `signals/${code}/${this.uid}/inbox`);
+    const inboxRef = ref(this.db, `signals/${code}/${this.peerId}/inbox`);
     // claim my signal node (rules: only I can create it)
-    set(ref(this.db, `signals/${code}/${this.uid}/uid`), this.uid).catch(() => {});
-    onDisconnect(ref(this.db, `signals/${code}/${this.uid}`)).remove();
+    set(ref(this.db, `signals/${code}/${this.peerId}/uid`), this.uid).catch(() => {});
+    onDisconnect(ref(this.db, `signals/${code}/${this.peerId}`)).remove();
     this._inboxUnsub = onChildAdded(inboxRef, (child) => {
       const msg = child.val();
       remove(child.ref).catch(() => {});
-      if (msg && msg.from !== this.uid) onMsg(msg);
+      if (msg && msg.from !== this.peerId) onMsg(msg);
     });
     return this._inboxUnsub;
   }
@@ -128,7 +134,7 @@ export class Signalling {
   /** Push a signalling message into another peer's inbox. */
   sendTo(code, peerId, kind, payload) {
     return push(ref(this.db, `signals/${code}/${peerId}/inbox`), {
-      from: this.uid, kind, payload: JSON.stringify(payload),
+      from: this.peerId, kind, payload: JSON.stringify(payload),
     });
   }
 
@@ -136,7 +142,7 @@ export class Signalling {
     clearInterval(this._heartbeatTimer);
     if (this._inboxUnsub) { this._inboxUnsub(); this._inboxUnsub = null; }
     if (this.room) {
-      remove(ref(this.db, `signals/${this.room}/${this.uid}`)).catch(() => {});
+      remove(ref(this.db, `signals/${this.room}/${this.peerId}`)).catch(() => {});
     }
   }
 }

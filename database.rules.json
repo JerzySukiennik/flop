@@ -12,8 +12,8 @@
     "signals": {
       "$room": {
         "$peerId": {
-          ".read": "auth != null && auth.uid === $peerId",
-          ".write": "auth != null && auth.uid === $peerId",
+          ".read": "auth != null && $peerId.beginsWith(auth.uid)",
+          ".write": "auth != null && $peerId.beginsWith(auth.uid)",
           "inbox": {
             ".write": "auth != null"
           }
