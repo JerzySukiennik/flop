@@ -2,6 +2,7 @@
 // Channel 'state' (unreliable): INPUT (client→host), STATE (host→clients).
 // Channel 'events' (reliable): JSON control messages + chunked full snapshots.
 import { TUNING } from '../game/tuning.js';
+import { NUM_BODIES } from '../game/ragdoll.js';
 
 export const MSG = { INPUT: 1, STATE: 2, EVENT_JSON: 3, SNAP_CHUNK: 4 };
 
@@ -102,7 +103,7 @@ export function encodeState(sim, propEntities, generation = 0) {
   for (const e of propEntities) {
     if (!e.body.isSleeping()) awakeProps.push(e);
   }
-  const size = 7 + activePlayers.length * (1 + 13 * BODY_BYTES) + 2 + awakeProps.length * (2 + BODY_BYTES);
+  const size = 7 + activePlayers.length * (1 + NUM_BODIES * BODY_BYTES) + 2 + awakeProps.length * (2 + BODY_BYTES);
   const buf = new ArrayBuffer(size);
   const dv = new DataView(buf);
   dv.setUint8(0, MSG.STATE);
@@ -134,7 +135,7 @@ export function decodeState(dv) {
     if (!(playerMask & (1 << slot))) continue;
     const flags = dv.getUint8(off); off += 1;
     const bodies = [];
-    for (let b = 0; b < 13; b++) {
+    for (let b = 0; b < NUM_BODIES; b++) {
       const t = {}; off = readBody(dv, off, t); bodies.push(t);
     }
     players[slot] = { flags, bodies };

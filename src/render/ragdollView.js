@@ -1,8 +1,8 @@
-// Visual layer for one ragdoll: primitive meshes mirroring the physics
-// bodies. Deliberately separate from the sim (§5.5) — a skinned mesh can be
-// swapped in here without touching game logic.
+// Visual layer for one bean ragdoll: primitive meshes mirroring the physics
+// bodies. The head is welded to the torso body, so its sphere renders as a
+// child of the torso mesh (eyes, hat and emote bubble ride on it).
 import * as THREE from 'three';
-import { PARTS } from '../game/ragdoll.js';
+import { PARTS, HEAD_LOCAL } from '../game/ragdoll.js';
 
 export const PLAYER_COLORS = [0xff6b4a, 0x4a9dff, 0x6bdb6b, 0xffd24a];
 
@@ -17,11 +17,8 @@ export class RagdollView {
     });
 
     for (const part of PARTS) {
-      let geo;
-      if (part.shape === 'capsule') geo = new THREE.CapsuleGeometry(part.dims[1], part.dims[0] * 2, 4, 12);
-      else if (part.shape === 'ball') geo = new THREE.SphereGeometry(part.dims[0], 16, 12);
-      else geo = new THREE.BoxGeometry(part.dims[0] * 2, part.dims[1] * 2, part.dims[2] * 2);
-      const isLimb = /forearm|shin|foot/.test(part.name);
+      const geo = new THREE.CapsuleGeometry(part.dims[1], part.dims[0] * 2, 6, 16);
+      const isLimb = /arm|leg/.test(part.name);
       const mesh = new THREE.Mesh(geo, isLimb ? dark : skin);
       mesh.castShadow = true;
       mesh.receiveShadow = true;
@@ -29,25 +26,32 @@ export class RagdollView {
       this.meshes.push(mesh);
     }
 
-    // Face: two googly eyes on the head so you can tell where he's looking.
-    const headIdx = PARTS.findIndex((p) => p.name === 'head');
-    const eyeGeo = new THREE.SphereGeometry(0.025, 8, 6);
-    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
-    for (const dx of [-0.045, 0.045]) {
-      const eye = new THREE.Mesh(eyeGeo, eyeMat);
-      eye.position.set(dx, 0.02, 0.095);
-      this.meshes[headIdx].add(eye);
-    }
-    this.headMesh = this.meshes[headIdx];
+    // Visual head: sphere child of the torso mesh (same rigid body).
+    const torsoMesh = this.meshes[0];
+    const head = new THREE.Mesh(new THREE.SphereGeometry(HEAD_LOCAL.r, 20, 16), skin);
+    head.position.set(HEAD_LOCAL.x, HEAD_LOCAL.y, HEAD_LOCAL.z);
+    head.castShadow = true;
+    torsoMesh.add(head);
+    this.headMesh = head;
     this.skinMat = skin;
     this.darkMat = dark;
+
+    // Face: two googly eyes so you can tell where he's looking.
+    const eyeGeo = new THREE.SphereGeometry(0.035, 8, 6);
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x222222 });
+    for (const dx of [-0.075, 0.075]) {
+      const eye = new THREE.Mesh(eyeGeo, eyeMat);
+      eye.position.set(dx, 0.03, HEAD_LOCAL.r * 0.87);
+      head.add(eye);
+    }
+
     this._hat = null;
     this.setHat(customization.hat ?? 'none');
 
     // Emote bubble (hidden until an emote fires).
     this.emoteSprite = makeEmoteSprite();
     this.emoteSprite.visible = false;
-    this.headMesh.add(this.emoteSprite);
+    head.add(this.emoteSprite);
     this._emoteTimer = 0;
 
     scene.add(this.group);
@@ -64,24 +68,24 @@ export class RagdollView {
     let mesh = null;
     if (hat === 'cone') {
       mesh = new THREE.Mesh(
-        new THREE.ConeGeometry(0.09, 0.22, 12),
+        new THREE.ConeGeometry(0.14, 0.32, 12),
         new THREE.MeshStandardMaterial({ color: 0xff8a3a }),
       );
-      mesh.position.y = 0.16;
+      mesh.position.y = HEAD_LOCAL.r + 0.1;
     } else if (hat === 'tophat') {
       mesh = new THREE.Group();
       const mat = new THREE.MeshStandardMaterial({ color: 0x232326, roughness: 0.5 });
-      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.02, 16), mat);
-      const top = new THREE.Mesh(new THREE.CylinderGeometry(0.085, 0.085, 0.18, 16), mat);
-      top.position.y = 0.1;
+      const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.03, 16), mat);
+      const top = new THREE.Mesh(new THREE.CylinderGeometry(0.13, 0.13, 0.26, 16), mat);
+      top.position.y = 0.14;
       mesh.add(brim, top);
-      mesh.position.y = 0.09;
+      mesh.position.y = HEAD_LOCAL.r * 0.8;
     } else if (hat === 'crown') {
       mesh = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.1, 0.085, 0.1, 8, 1, true),
+        new THREE.CylinderGeometry(0.15, 0.13, 0.14, 8, 1, true),
         new THREE.MeshStandardMaterial({ color: 0xf0c040, metalness: 0.7, roughness: 0.3, side: THREE.DoubleSide }),
       );
-      mesh.position.y = 0.12;
+      mesh.position.y = HEAD_LOCAL.r * 0.95;
     }
     if (mesh) { this._hat = mesh; this.headMesh.add(mesh); }
   }
@@ -99,7 +103,7 @@ export class RagdollView {
     }
   }
 
-  /** Update from live rigid bodies (host) . */
+  /** Update from live rigid bodies (host). */
   updateFromBodies(partList) {
     for (let i = 0; i < partList.length; i++) {
       const p = partList[i].translation();
@@ -132,7 +136,7 @@ function makeEmoteSprite() {
   const tex = new THREE.CanvasTexture(canvas);
   const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
   sprite.scale.set(0.5, 0.5, 1);
-  sprite.position.y = 0.42;
+  sprite.position.y = HEAD_LOCAL.r + 0.35;
   sprite.userData.canvas = canvas;
   sprite.userData.tex = tex;
   return sprite;

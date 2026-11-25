@@ -5,25 +5,21 @@ export const TUNING = {
   dt: 1 / 60,
   gravity: -9.81,
 
-  // --- body dimensions (rest pose: standing, arms hanging) ---
+  // --- body (bean rig: torso + head collider + 2 arms + 2 legs) ---
   body: {
-    pelvis: { mass: 11 },
-    chest: { mass: 24 },
-    head: { mass: 5 },
-    upperArm: { mass: 2 },
-    forearm: { mass: 1.5 },
-    thigh: { mass: 7 },
-    shin: { mass: 3.5 },
-    foot: { mass: 1 },
+    torso: { mass: 40 },
+    head: { mass: 5 },     // welded collider on the torso body
+    arm: { mass: 3 },
+    leg: { mass: 9.5 },
     linearDamping: 0.08,
-    angularDamping: 0.6,
+    angularDamping: 0.9,
     friction: 0.7,
     footFriction: 1.1,
   },
 
   // --- balance / stand ---
   balance: {
-    standHeight: 0.98,     // pelvis center height above ground when standing
+    standHeight: 0.95,     // torso center height above ground when standing
     hoverKp: 5200,         // N/m pelvis hover spring
     hoverKd: 620,          // N·s/m
     hoverMaxUp: 1500,      // N cap (≈2.2× body weight)
@@ -48,15 +44,9 @@ export const TUNING = {
   // --- ball-joint PD motors (hand-rolled; JS bindings expose no spherical motors) ---
   // kp N·m/rad, kd N·m·s/rad, max N·m
   motors: {
-    spine: { kp: 420, kd: 42, max: 480 },
-    neck: { kp: 32, kd: 4, max: 40 },
-    shoulder: { kp: 26, kd: 6, max: 42 },   // low kp: arm inertia is tiny, 60 Hz PD goes unstable above ~70
-    hip: { kp: 260, kd: 26, max: 320 },
-    // revolute (built-in rapier motors): stiffness/damping in solver units
-    elbow: { stiffness: 55, damping: 8 },
-    knee: { stiffness: 220, damping: 25 },
-    ankle: { stiffness: 45, damping: 6 },
-    armAimBoost: 1.6,      // shoulder/elbow gain multiplier while that arm aims
+    shoulder: { kp: 34, kd: 7, max: 55 },   // low kp: arm inertia is small, 60 Hz PD goes unstable if too stiff
+    hip: { kp: 180, kd: 22, max: 240 },
+    armAimBoost: 1.6,      // shoulder gain multiplier while that arm aims
   },
 
   // --- locomotion ---
